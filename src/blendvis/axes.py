@@ -4,8 +4,16 @@ from math import radians
 import pathlib
 import time
 from blendvis.primitives import FontPrimitive, LinePrimitive, CubePrimitive, CameraPrimitive
+from blendvis.materials import FlatRBG, ColorGradient, Material
 
 from blendvis import SAVE_PATH, DEFAULTS
+
+
+def check(kwargs, key):
+    if key in kwargs.keys():
+        if kwargs[key]:
+            return True
+    return False
 
 
 class Axes:
@@ -45,20 +53,25 @@ class Axes:
         self.add_camera()
 
 
-    def barplot(self, X, Y, Z, bevel=True, wireframe=False, mat=DEFAULTS['mat_bars']):
+    def barplot(self, X, Y, Z, mat=DEFAULTS['mat_bars'], **kwargs):
         self.X = X
         self.Y = Y
         self.Z = Z
-        self.kwargs['bevel'] = bevel
-        self.kwargs['wireframe'] = wireframe
+
+        self.kwargs = kwargs
+
+        # mat = ColorGradient(name='test').add_to_scene()  # TODO: integrate better
 
         for (x, y, z) in zip(self.X.flatten(), self.Y.flatten(), self.Z.flatten()):
+            mat = FlatRBG.from_cmap(cmap='cividis', value=z, vmax=-1, vmin=1).add_to_scene()  # TODO: integrate better
+
             CubePrimitive(p=(x, y, 0), height=z, xy_scale=0.9, mat=mat).add_to_scene()
             bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-            if self.kwargs['wireframe']:
+            if check(kwargs, 'wireframe'):
                 if self.verbose: print('adding a wireframe')
                 bpy.ops.object.modifier_add(type='WIREFRAME')
-            if self.kwargs['bevel']:
+
+            if check(self.kwargs, 'bevel'):
                 if self.verbose: print('adding a bevel')
                 bpy.ops.object.modifier_add(type='BEVEL')
                 bpy.context.object.modifiers["Bevel"].width = 0.03
@@ -84,7 +97,8 @@ class Axes:
             FontPrimitive(text=str(ytick), p=(YTICKBASE, yi, 0)).add_to_scene()
         return None
 
-    def add_camera(self):
-        CameraPrimitive(loc=(4, 4, 0), camera_aim_loc=(4, 4, 0)).add_to_scene()
+    def add_camera(self, type="PERSP"):
+        CameraPrimitive(loc=(4, 4, 0), camera_aim_loc=(4, 4, 0), type=type).add_to_scene()
+
 
 

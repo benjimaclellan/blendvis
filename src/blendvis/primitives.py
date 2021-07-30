@@ -13,7 +13,13 @@ class Primitive:
         return
 
     def add_material(self, ob, mat):
-        mat = bpy.data.materials.get(mat)
+        if type(mat) is str:
+            mat = bpy.data.materials.get(mat)
+        elif type(mat) is bpy.types.Material:
+            pass
+        else:
+            raise TypeError("Not a material")
+
         if ob.data.materials:
             # assign to 1st material slot
             ob.data.materials[0] = mat
@@ -104,7 +110,7 @@ class CubePrimitive(Primitive):
         bpy.context.scene.cursor.location = (0, 0, -0.5)
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
 
-        ob.location = (self.p[0], self.p[1], self.p[2])
+        ob.location = self.p
         ob.scale = (self.xy_scale, self.xy_scale, self.height)
 
         self.link_collection(ob)
@@ -117,10 +123,10 @@ class CubePrimitive(Primitive):
 class CameraPrimitive(Primitive):
     collection = "CAMERA"
 
-    def __init__(self, loc=(4, 4, 0), camera_aim_loc=(4, 4, 0)):
+    def __init__(self, loc=(4, 4, 0), camera_aim_loc=(4, 4, 0), type="PERSP"):
         self.loc = loc
         self.camera_aim_loc = camera_aim_loc
-
+        self.type = type
         self.camera_aim = None
         self.camera = None
 
@@ -135,6 +141,7 @@ class CameraPrimitive(Primitive):
         bpy.ops.object.camera_add(enter_editmode=False, align='VIEW', location=(-6, -6, 7),
                                   rotation=(radians(65), radians(0), radians(-45)), scale=(1, 1, 1))
         self.camera = bpy.context.active_object
+        self.camera.data.type = self.type
         bpy.ops.object.constraint_add(type='TRACK_TO')
         bpy.context.object.constraints["Track To"].target = self.camera_aim
         bpy.ops.transform.translate(value=(0, 0, 10), orient_type='LOCAL')
