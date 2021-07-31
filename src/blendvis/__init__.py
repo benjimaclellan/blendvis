@@ -3,11 +3,16 @@ import bpy
 
 import blendvis.materials
 
-DEFAULTS = {'mat_axes': blendvis.materials.FlatRBG(name="axes", rgba=3 * [0.1] + [1]).add_to_scene(),
-            'mat_bars': blendvis.materials.FlatRBG(name="boxes", rgba=(1, 1, 1, 1)).add_to_scene(),
-            'mat_font': blendvis.materials.FlatRBG(name="fonts", rgba=(0, 0, 0, 1)).add_to_scene()}
+DEFAULTS = {
+    'mat_axes': blendvis.materials.FlatRBG(name="axes", rgba=3 * [0.1] + [1]).add_to_scene(),
+    'mat_bars': blendvis.materials.FlatRBG(name="boxes", rgba=(1, 1, 1, 1)).add_to_scene(),
+    'mat_font': blendvis.materials.FlatRBG(name="fonts", rgba=(0, 0, 0, 1)).add_to_scene(),
+    'black': blendvis.materials.FlatRBG(name="black", rgba=(0, 0, 0, 1)).add_to_scene()
+}
 SAVE_PATH = pathlib.Path(r"C:\Users\benjamin\OneDrive - University of Waterloo\Documents\IQC - Projects\Code\blendvis\examples\renders\3d-barplot.png")
 
+bpy.ops.font.open(filepath="//..\\..\\..\\..\\..\\..\\..\\..\\WINDOWS\\Fonts\\couri.ttf", relative_path=True)
+MAIN_FONT = bpy.data.fonts.get('CourierNewPS-ItalicMT')
 
 # remove everything to start
 def clear_collections():

@@ -3,7 +3,7 @@ import copy
 from math import radians
 import pathlib
 
-from blendvis import DEFAULTS
+from blendvis import DEFAULTS, MAIN_FONT
 
 
 class Primitive:
@@ -54,6 +54,7 @@ class FontPrimitive(Primitive):
 
         font_obj.location = (self.p[0], self.p[1], self.p[2])
         font_obj.data.align_x = "CENTER"
+        font_obj.data.font = MAIN_FONT
 
         self.link_collection(font_obj)
 
@@ -78,6 +79,17 @@ class LinePrimitive(Primitive):
         bpy.ops.mesh.primitive_plane_add(size=1, enter_editmode=False, align='WORLD', location=(0, 0, 0),
                                          scale=(1, 1, 1))
         ob = bpy.context.active_object
+
+        # orient the 2d plane in 3d space
+        if self.plane == 'xy':
+            pass
+        elif self.plane == 'yz':
+            ob.rotation_euler = (radians(0), radians(90), radians(0))
+        elif self.plane == 'xz':
+            ob.rotation_euler = (radians(90), radians(0), radians(0))
+        else:
+            raise TypeError("Not a proper orientation for 2d plane in 3d space. Choose 'xy', 'yz', or 'xz'")
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 
         ob.scale = [self.thickness + (self.p2[0] - self.p1[0]),
                     self.thickness + (self.p2[1] - self.p1[1]),
@@ -112,6 +124,34 @@ class CubePrimitive(Primitive):
 
         ob.location = self.p
         ob.scale = (self.xy_scale, self.xy_scale, self.height)
+
+        self.link_collection(ob)
+
+        if self.mat is not None:
+            self.add_material(ob, self.mat)
+        return
+
+
+class SpherePrimitive(Primitive):
+    collection = 'MESHES'
+    type = "uv"  # "ico" or "uv"
+
+    def __init__(self, p=(0, 0, 0), scale=1, mat=None):
+        self.p = p
+        self.scale = scale
+        self.mat = mat
+
+    def add_to_scene(self):
+        if self.type == 'ico':
+            bpy.ops.mesh.primitive_ico_sphere_add(radius=1, enter_editmode=False, align='WORLD', location=(0, 0, -0.5),
+                                                  scale=(1, 1, 1))
+        elif self.type == 'uv':
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=1, enter_editmode=False, align='WORLD', location=(0, 0, -0.5),
+                                                 scale=(1, 1, 1))
+        ob = bpy.context.active_object
+
+        ob.location = self.p
+        ob.scale = 3 * [self.scale]
 
         self.link_collection(ob)
 
