@@ -1,1 +1,1 @@
-from blendvis.figures.figures import Figure, figure
+from blendvis.figures.figures import Figure, figure, subplots

@@ -16,7 +16,7 @@ def check(kwargs, key):
 
 # add in the collections that sort the objects in the scene
 def init_collections():
-    for coll in ['MAIN', 'FONTS', 'LINES', 'MESHES', 'CAMERA', "CURVES", "PENCILS"]:
+    for coll in ['MAIN', 'FONTS', 'LINES', 'MESHES', 'CAMERA', "CURVES", "PENCILS", "LATEX"]:
         c = bpy.data.collections.new(coll)
         bpy.context.scene.collection.children.link(c)
 
@@ -67,7 +67,6 @@ class Axes(_Axes):
         self.world.node_tree.nodes["Background"].inputs[0].default_value = (0.999985, 0.999985, 0.999985, 1)
         bpy.context.scene.world = self.world
 
-        # blendvis.init_collections()
         init_collections()
 
     def _update_lim(self, t, tlim, ticks):
