@@ -2,7 +2,7 @@ import bpy
 import copy
 import numpy as np
 
-# from blendvis import DEFAULTS, SAVE_PATH
+from blendvis import rcParams
 
 
 class _Figure:
@@ -27,11 +27,13 @@ class _Axes:
 
         self._bxlim = (0, 10)
         self._bylim = (0, 10)
-        self._bzlim = (-1, 1)
+        self._bzlim = (0, 5)
 
         self._xlim = None
         self._ylim = None
         self._zlim = None
+
+        self._grid = rcParams['grid']
         return
 
     def trans_scene(self, x=None, y=None, z=None):
@@ -115,4 +117,17 @@ class _Axes:
     @zlim.setter
     def zlim(self, _zlim):
         self._zlim = _zlim
+        return
+
+    @property
+    def grid(self):
+        return
+
+    @grid.getter
+    def grid(self):
+        return self._grid
+
+    @grid.setter
+    def grid(self, _grid):
+        self._grid = _grid
         return

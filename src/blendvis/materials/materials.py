@@ -18,7 +18,7 @@ class GreasePencil(Material):
         return mat
 
 
-class FlatRBG(Material):
+class FlatRGB(Material):
     def __init__(self, name="blendvis-rgba", rgba=(0, 1, 0, 1)):
         self.name = name
         self.rgba = rgba

@@ -6,8 +6,10 @@ import numpy as np
 
 from blendvis import DEFAULTS, MAIN_FONT, DEFAULT_GP, rcParams, DEFAULT_FONT
 
-bpy.ops.font.open(filepath="//..\\..\\..\\..\\..\\..\\..\\..\\WINDOWS\\Fonts\\couri.ttf", relative_path=True)
-MAIN_FONT = bpy.data.fonts[len(bpy.data.fonts)-1]
+# bpy.ops.font.open(filepath="//..\\..\\..\\..\\..\\..\\..\\..\\WINDOWS\\Fonts\\couri.ttf", relative_path=True)
+MM = len(bpy.data.fonts)
+bpy.ops.font.open(filepath="//..\\..\\..\\..\\..\\..\\..\\..\\WINDOWS\\Fonts\\calibri.ttf", relative_path=True)
+MAIN_FONT = bpy.data.fonts["Calibri"]
 
 
 class Primitive:
@@ -46,9 +48,10 @@ class Primitive:
 class FontPrimitive(Primitive):
     collection = 'FONTS'
 
-    def __init__(self, text="text", p=(0, 0, 0), mat=None):
+    def __init__(self, text="text", p=(0, 0, 0), rot=(0, 0, 0), mat=None):
         self.text = text
         self.p = p
+        self.rot = rot
         self.mat = mat if mat is not None else DEFAULT_FONT
 
     def add_to_scene(self):
@@ -60,6 +63,7 @@ class FontPrimitive(Primitive):
 
         font_obj = bpy.data.objects.new(name="Font Object", object_data=font_curve)
         font_obj.location = self.p
+        font_obj.rotation_euler = (radians(self.rot[0]), radians(self.rot[1]), radians(self.rot[2]))
         self.link_collection(font_obj)
 
         if self.mat is not None:

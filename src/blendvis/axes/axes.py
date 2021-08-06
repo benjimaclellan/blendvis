@@ -3,8 +3,10 @@ import numpy as np
 
 from blendvis.primitives import FontPrimitive, CubePrimitive, \
     CameraPrimitive, SpherePrimitive, CurvePrimitive, GreasePencilPrimitive
+from blendvis.latex import LatexPrimitive
+
 from blendvis.axes.bases import _Axes
-from blendvis import DEFAULTS, SAVE_PATH
+from blendvis import DEFAULTS, SAVE_PATH, rcParams
 
 
 def check(kwargs, key):
@@ -35,7 +37,7 @@ def remove_all_other_worlds(world_keep=None):
 
 
 class Axes(_Axes):
-    def __init__(self, name="My BlendVis Figure", verbose=False):
+    def __init__(self, name="My BlendVis Figure", use_latex=False, verbose=False):
         super().__init__()
 
         self.render_list = []
@@ -43,6 +45,7 @@ class Axes(_Axes):
         self.kwargs = {}
         self.verbose = verbose
         self.name = name
+        self.use_latex = use_latex
 
         self.camera = None
         self.camera_aim = None
@@ -113,9 +116,9 @@ class Axes(_Axes):
             ztick_labels = [str(z) for z in zticks]
         self.ztick_labels = ztick_labels
 
-    def save(self):
-        filename = SAVE_PATH
-        bpy.context.scene.render.filepath = str(filename.absolute())
+    def save(self, filename='blendvis_plot.png'):
+        filename = SAVE_PATH.joinpath(filename)
+        bpy.context.scene.render.filepath = str(filename.as_posix())
         bpy.ops.render.render(write_still=True)
         return
 
@@ -131,7 +134,9 @@ class Axes(_Axes):
         self.add_axes()
         self.add_ticks()
         self.add_tick_labels()
-        self.add_major_grid()
+
+        if self.grid:
+            self.add_major_grid()
 
 
     """
@@ -217,7 +222,7 @@ class Axes(_Axes):
 
     def add_ticks(self):
         g = GreasePencilPrimitive(pressure=50)
-
+        print("ZtICKS", self.zticks)
         TICK_LENGTH = 0.3
         for xtick in self.xticks:
             g.add_stroke([self.trans_scene(xtick, self.ylim[0], self.zlim[0]),
@@ -226,6 +231,11 @@ class Axes(_Axes):
         for ytick in self.yticks:
             g.add_stroke([self.trans_scene(self.xlim[0], ytick, self.zlim[0]),
                           self.trans_scene(self.xlim[0] - TICK_LENGTH, ytick, self.zlim[0])
+                          ])
+        for ztick in self.zticks:
+            print(self.trans_scene(self.xlim[0] - TICK_LENGTH, self.ylim[1], ztick))
+            g.add_stroke([self.trans_scene(self.xlim[0], self.ylim[1], ztick),
+                          self.trans_scene(self.xlim[0] - TICK_LENGTH, self.ylim[1], ztick)
                           ])
         g.add_to_scene()
         return
@@ -236,32 +246,67 @@ class Axes(_Axes):
             g.add_stroke([self.trans_scene(xtick, self.ylim[0], self.zlim[0]),
                           self.trans_scene(xtick, self.ylim[1], self.zlim[0])
                           ])
+            g.add_stroke([self.trans_scene(xtick, self.ylim[1], self.zlim[0]),
+                          self.trans_scene(xtick, self.ylim[1], self.zlim[1])
+                          ])
         for ytick in self.yticks:
             g.add_stroke([self.trans_scene(self.xlim[0], ytick, self.zlim[0]),
                           self.trans_scene(self.xlim[1], ytick, self.zlim[0])
                           ])
+            g.add_stroke([self.trans_scene(self.xlim[1], ytick, self.zlim[0]),
+                          self.trans_scene(self.xlim[1], ytick, self.zlim[1])
+                          ])
+
+        for ztick in self.zticks:
+            g.add_stroke([self.trans_scene(self.xlim[0], self.ylim[1], ztick),
+                          self.trans_scene(self.xlim[1], self.ylim[1], ztick)
+                          ])
+            g.add_stroke([self.trans_scene(self.xlim[1], self.ylim[0], ztick),
+                          self.trans_scene(self.xlim[1], self.ylim[1], ztick)
+                          ])
+
+
         g.add_to_scene()
         return
 
     def add_tick_labels(self):
         # XTICKBASE, YTICKBASE = 2 * [-0.8]
         OFFSET = -0.8
-        for xi, xtick in zip(self.xticks, self.xtick_labels):
-            p = self.trans_scene(xi, self.ylim[0], self.zlim[0])
-            print(type(p))
-            print(p)
-            p[1] += OFFSET
-            FontPrimitive(text=str(xtick), p=p).add_to_scene()
-        for yi, ytick in zip(self.yticks, self.ytick_labels):
-            p = self.trans_scene(self.xlim[0], yi, self.zlim[0])
-            p[0] += OFFSET
-            FontPrimitive(text=str(ytick), p=p).add_to_scene()
+        if rcParams['xticklabels']:
+            for xi, xtick in zip(self.xticks, self.xtick_labels):
+                p = self.trans_scene(xi, self.ylim[0], self.zlim[0])
+                p[1] += OFFSET
+                if self.use_latex:
+                    LatexPrimitive(text=f'${str(xtick)}$', loc=p, scale=400).render().add_to_scene()
+                else:
+                    FontPrimitive(text=str(xtick), p=p).add_to_scene()
+
+        if rcParams['yticklabels']:
+            for yi, ytick in zip(self.yticks, self.ytick_labels):
+                p = self.trans_scene(self.xlim[0], yi, self.zlim[0])
+                p[0] += OFFSET
+                if self.use_latex:
+                    LatexPrimitive(text=f'${str(ytick)}$', loc=p, scale=400).render().add_to_scene()
+                else:
+                    FontPrimitive(text=str(ytick), p=p).add_to_scene()
+
+        if rcParams['zticklabels']:
+            for zi, ztick in zip(self.zticks, self.ztick_labels):
+                p = self.trans_scene(self.xlim[0], self.ylim[1], zi)
+                p[0] += OFFSET
+                if self.use_latex:
+                    LatexPrimitive(text=f'${str(ztick)}$', loc=p, scale=400).render().add_to_scene()
+                else:
+                    FontPrimitive(text=str(ztick), p=p, rot=(90, 0, 0)).add_to_scene()
         return
 
     def add_camera(self, azimuth=45, type="PERSP"):
-        camera_aim_loc = ((self._bxlim[1] + self._bxlim[0]) / 2,
-                          (self._bylim[1] + self._bylim[0]) / 2,
-                          (self._bzlim[1] + self._bzlim[0]) / 2)
+        # camera_aim_loc = ((self._bxlim[1] + self._bxlim[0]) / 2,
+        #                   (self._bylim[1] + self._bylim[0]) / 2,
+        #                   (self._bzlim[1] + self._bzlim[0]) / 2)
+        camera_aim_loc = (self._bxlim[1],
+                          self._bylim[1],
+                          self._bzlim[0])
         CameraPrimitive(radius=20, camera_aim_loc=camera_aim_loc, type=type).add_to_scene()
 
 

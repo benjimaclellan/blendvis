@@ -5,6 +5,10 @@
   "font": null,
   "font_size": null,
   "line_color": "black",
-  "line_thickness": 14
+  "line_thickness": 14,
+  "grid": true,
+  "xticklabels": true,
+  "yticklabels": true,
+  "zticklabels": false
 }
 

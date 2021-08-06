@@ -13,7 +13,8 @@ from blendvis import DEFAULTS, MAIN_FONT, DEFAULT_GP, rcParams, DEFAULT_FONT
 class LatexPrimitive(Primitive):
     collection = "LATEX"
 
-    def __init__(self, loc=(0, 0, 0), scale=100, mat=None):
+    def __init__(self, text=r'$\vert HV \rangle$', loc=(0, 0, 0), scale=100, mat=None):
+        self.text = text
         self.loc = loc
         self.scale = scale
         self.mat = mat if mat is not None else DEFAULT_FONT
@@ -34,24 +35,24 @@ class LatexPrimitive(Primitive):
             os.remove(filename)
             print(filename)
 
-    def render(self, text=r'$\vert HV \rangle$', **kwargs):
+    def render(self, **kwargs):
 
-        kwargs = {'$__EQUATION__$': text}
+        kwargs = {'$__EQUATION__$': self.text}
 
         _dir = pathlib.Path(__file__).parent.resolve()  # TODO use some packaging util to set paths
 
         with open(_dir.joinpath(self.template_file), 'r') as file:
-            text = file.read()
+            _fid = file.read()
 
             for key, value in kwargs.items():
-                text = text.replace(key, value)
+                _fid = _fid.replace(key, value)
 
             # tex_file_name = self.tmp_name.with_suffix(".tex")
             tmp_folder = _dir.joinpath('tmp')
             tex_file = tmp_folder.joinpath(self.tmp_name).with_suffix(".tex")
 
             with open(tex_file, "w") as tmp_file:
-                tmp_file.write(text)
+                tmp_file.write(_fid)
 
             # make pdf via pdflatex
             subprocess.call(f"{self.pdflatex_cmd} {self.tmp_name}.tex", shell=True, cwd=tmp_folder)
@@ -59,6 +60,7 @@ class LatexPrimitive(Primitive):
             # make svg using pdf2svg
             subprocess.call(f'{self.pdf2svg_cmd} {str(self.tmp_name.with_suffix(".pdf"))} {str(self.tmp_name.with_suffix(".svg"))}',
                             shell=True, cwd=tmp_folder)
+            return self
 
     def add_to_scene(self):
 
@@ -82,7 +84,10 @@ class LatexPrimitive(Primitive):
         ob.location = self.loc
         ob.scale = 3 * [self.scale]
 
-        self.add_material(ob, self.mat)
+        self.link_collection(ob)
+
+        if self.mat is not None:
+            self.add_material(ob, self.mat)
 
         self.clean_up_tmp_files()
 
