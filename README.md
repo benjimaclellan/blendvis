@@ -1,11 +1,13 @@
 # blendvis: Blender Visualization Tool for 3D Scientific Plotting 
 
 ## Quick Start
-`blendvis` aims to merge the simplicity of `matplotlib.pyplot` for plotting scientific data 
-and the power of [Blender](https://www.blender.org/) as a 3D rendering engine.
+The aim of `blendvis` is to us simple Python syntax for scientific plotting 
+with the full 3D rendering (and animation) capabilities of [Blender](https://www.blender.org/).
+The library uses similar commands to the `matplotlib` library and uses standard numerical data types such as `numpy` arrays.
+The data is converted to an appropriate Blender scene and rendered using ray-tracing for high-quality 3D images.
 
 ## Examples
-Here are a few examples of `blendvis` to demonstrate its capabilities.
+We start with some simple examples of `blendvis` plots.
 ### Bar plot
 ```
 import blendvis
@@ -90,17 +92,16 @@ ax.show()
 
 ## Installing
 `blendvis` must be run via an instance of Blender. 
-First [download](https://www.blender.org/download/) and install Blender (2.93 LTS version).
+First [download](https://www.blender.org/download/) and install Blender (tested on 2.93 LTS version).
 Download the source code and install as an add-on in Blender (Edit -> Preferences -> Add-ons -> Install).
-See the example Blend files for how to use the library.
 
 ## Features
-Currently `blendvis` has capabilities for 
+Currently `blendvis` enables:
 * bar, scatter, and line plots
 * various colors, materials, and color maps
 * LaTeX rendering (further testing needed)
 * choose any system font
 
-In the future, `blendvis` will also have
+In the future, I hope to add:
 * surface plots, tri plots
 * subplots
