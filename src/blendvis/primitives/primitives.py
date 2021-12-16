@@ -209,7 +209,8 @@ class CurvePrimitive(Primitive):
         self.y = y
         self.z = z
         if w is None:
-            self.w = np.ones_like(x)
+            w = np.ones_like(x)
+        self.w = w
 
         self.cyclic = cyclic
         self.depth = depth
